@@ -6,7 +6,9 @@ This repository contains config files common to buildpacks.
 
 If you just wrote a new buildpack, run bootstrap.sh as follows:
 
+```
 ./scripts/bootstrap.sh --target <path/to/your/buildpack>
+```
 
 This will copy the relevant config files to your buildpack. Git commit and Push.
 
