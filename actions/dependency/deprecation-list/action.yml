@@ -1,0 +1,32 @@
+name: 'List Deprecated dependencies'
+
+description: |
+  Parses the dependencies deprecation metadata of a cloudfoundry buildpack and
+  returns a markdown formatted list of dependencies that are/will be deprecated
+  in the given date window.
+
+inputs:
+  buildpack:
+    description: 'Path to the buildpack'
+    required: true
+  buffer-days:
+    description: 'List all deps that will be deprecated as on these many days in the future'
+    required: false
+  reference-date:
+    description: 'Use a date other than system date as the current date'
+    required: false
+
+outputs:
+  list:
+    description: 'List of deprecated dependencies in markdown format'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+  - "--buildpack"
+  - ${{ inputs.buildpack }}
+  - "--buffer-days"
+  - ${{ inputs.buffer-days }}
+  - "--reference-date"
+  - ${{ inputs.reference-date }}
