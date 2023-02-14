@@ -1,0 +1,61 @@
+name: New Dependency Version Line Reminder
+
+on:
+  repository_dispatch:
+    types: new-version-line
+
+jobs:
+  new-version:
+    runs-on: ubuntu-22.04
+    name: New Version Line
+    steps:
+
+      - name: File Issue
+        id: file-issue
+        uses: paketo-buildpacks/github-config/actions/issue/file@main
+        with:
+          token: ${{ secrets.CF_BOT_GITHUB_TOKEN }}
+          repo: ${{ github.repository }}
+          issue_title: "Add new version line: ${{ github.event.client_payload.Name }} ${{ github.event.client_payload.Version }}"
+          issue_body: |
+            Please edit the dependency-builds pipeline to add the new version line to the relevant dependency/buildpack.
+            
+            For nginx/nginx-static: Also remove older mainline/stable version.
+            E.g. If you are adding nginx 1.22, you will remove 1.20. If you are adding 1.23, you will remove 1.21
+            
+            <code>
+            ${{ github.event.client_payload.DependencyYAML }}
+            </code>
+  
+
+      - name: Add issue to project
+        id: issue-to-proj
+        uses: paketo-buildpacks/github-config/actions/issue/add-to-project@main
+        with:
+          # CF buildpacks project - https://github.com/orgs/cloudfoundry/projects/37
+          project-org: cloudfoundry
+          project-num: 37
+          field-name: Workstream
+          option-name: New Versions
+          issue-node-id: ${{ steps.file-issue.outputs.node-id }}
+          token: ${{ secrets.CF_BOT_GITHUB_TOKEN }}
+
+
+  failure:
+    name: Alert on Failure
+    runs-on: ubuntu-22.04
+    needs: [new-version]
+    if: ${{ always() && needs.new-version.result == 'failure' }}
+    steps:
+      - name: File Failure Alert Issue
+        uses: paketo-buildpacks/github-config/actions/issue/file@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repo: ${{ github.repository }}
+          label: "failure:new-version"
+          comment_if_exists: true
+          issue_title: "Failure: New Dependency Version Line Reminder workflow"
+          issue_body: |
+            New Dependency Version Line Reminder workflow [failed](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}).
+          comment_body: |
+            Another failure occurred: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
