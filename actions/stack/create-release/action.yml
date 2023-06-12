@@ -1,0 +1,23 @@
+name: 'Create Stack BOSH release'
+
+description: |
+  Creates a BOSH release for a CF stack based off of the rootfs/create-release
+  Concourse job.
+  (https://github.com/cloudfoundry/buildpacks-ci/blob/master/tasks/rootfs/create-release)
+
+inputs:
+  version:
+    description: 'Release version'
+    required: true
+  release-name:
+    description: 'Name of the release'
+    required: true
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+  - "--version"
+  - ${{ inputs.version }}
+  - "--release-name"
+  - ${{ inputs.release-name }}

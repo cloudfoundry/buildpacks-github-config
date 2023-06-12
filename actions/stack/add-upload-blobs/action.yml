@@ -1,0 +1,43 @@
+name: 'Add and upload stack blobs for the release'
+
+description: |
+  Adds and uploads rootfs blobs for BOSH release for a CF stack based off of the rootfs/create-release
+  Concourse job.
+  (https://github.com/cloudfoundry/buildpacks-ci/blob/master/tasks/rootfs/create-release)
+
+inputs:
+  version:
+    description: 'Release version'
+    required: true
+  access-key-id:
+    description: 'AWS S3 access key for the blobstore'
+    required: true
+  secret-access-key:
+    description: 'AWS S3 secret access key for the blobstore'
+    required: true
+  release-name:
+    description: 'Name of the release'
+    required: true
+  blob-glob:
+    description: 'Pattern of rootfs blob file name'
+    required: true
+  blob-name:
+    description: 'Rootfs blob path'
+    required: true
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+  - "--version"
+  - ${{ inputs.version }}
+  - "--access-key-id"
+  - ${{ inputs.access-key-id }}
+  - "--secret-access-key"
+  - ${{ inputs.secret-access-key }}
+  - "--release-name"
+  - ${{ inputs.release-name }}
+  - "--blob-glob"
+  - ${{ inputs.blob-glob }}
+  - "--blob-name"
+  - ${{ inputs.blob-name }}

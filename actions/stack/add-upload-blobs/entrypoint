@@ -1,0 +1,79 @@
+#!/bin/bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+function main() {
+  local version access_key_id secret_access_key release_name blob_glob blob_name
+
+  while [ "${#}" != 0 ]; do
+    case "${1}" in
+      --version)
+        version="${2}"
+        shift 2
+        ;;
+
+      --access-key-id)
+        access_key_id="${2}"
+        shift 2
+        ;;
+
+      --secret-access-key)
+        secret_access_key="${2}"
+        shift 2
+        ;;
+
+      --release-name)
+        release_name="${2}"
+        shift 2
+        ;;
+
+      --blob-glob)
+        blob_glob="${2}"
+        shift 2
+        ;;
+
+      --blob-name)
+        blob_name="${2}"
+        shift 2
+        ;;
+
+      "")
+        shift
+        ;;
+
+      *)
+        echo "unknown argument \"${1}\""
+        exit 1
+    esac
+  done
+
+  if [ -n "${secret_access_key:+1}" ]; then
+    echo "creating private.yml..."
+    cat > config/private.yml <<EOF
+---
+blobstore:
+  options:
+    access_key_id: $access_key_id
+    secret_access_key: $secret_access_key
+EOF
+  fi
+  set -x
+
+  rm -f config/blobs.yml
+  touch config/blobs.yml
+
+  # shellcheck disable=SC2086
+  blob="$(ls $blob_glob)"
+
+  if [ ! -f "$blob" ] ; then
+    echo "$release_name blob not found at $blob_glob"
+    exit 1
+  fi
+
+  bosh -n add-blob "$blob" "$blob_name/$release_name-$version.tar.gz"
+  bosh -n upload-blobs
+}
+
+main "${@:-}"
