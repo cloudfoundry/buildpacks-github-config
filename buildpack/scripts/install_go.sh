@@ -12,8 +12,13 @@ function main() {
   fi
 
   local version expected_sha dir
-  version="1.25.6"
-  expected_sha="0ed64e3b9cb9b1c2ec57880dae2427b0ee2676f2ae2fb53c2e1bb838c500f9fb"
+  if [[ "${CF_STACK}" == "cflinuxfs3" ]]; then
+    version="1.25.2"
+    expected_sha="385184a62bdcb565860663d365e2b28cdfbb6919d4439dae7e5cc87694a3dca6"
+  else
+    version="1.25.6"
+    expected_sha="0ed64e3b9cb9b1c2ec57880dae2427b0ee2676f2ae2fb53c2e1bb838c500f9fb"
+  fi
   dir="/tmp/go${version}"
 
   mkdir -p "${dir}"
